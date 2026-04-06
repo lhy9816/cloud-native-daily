@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍒 樱桃的云原生日报 | 2026-04-06 深度版</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #326ce5; --accent: #f5a623; --dark: #0d1117;
+    --darker: #161b22; --light: #e8eaf6; --white: #ffffff;
+    --green: #2ea043; --red: #f85149; --purple: #8957e5; --orange: #d29922;
+    --gray: #8b949e; --border: rgba(255,255,255,0.1);
+  }
+  body { font-family: 'Noto Sans SC', sans-serif; background: var(--dark); color: var(--white); overflow: hidden; height: 100vh; }
+  .slide { display: none; flex-direction: column; height: 100vh; padding: 48px 64px; position: relative; overflow-y: auto; }
+  .slide.active { display: flex; }
+  .slide::-webkit-scrollbar { width: 4px; }
+  .slide::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+  .slide-title { justify-content: center; align-items: center; text-align: center;
+    background: linear-gradient(135deg, var(--darker) 0%, #0f3460 50%, var(--primary) 100%); }
+  .slide-title h1 { font-size: 52px; font-weight: 900; margin-bottom: 12px;
+    background: linear-gradient(90deg, #fff, #90caf9, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .slide-title .subtitle { font-size: 22px; color: rgba(255,255,255,0.65); margin-bottom: 32px; }
+  .slide-title .meta { font-size: 15px; color: rgba(255,255,255,0.4); }
+
+  .slide-num { position: absolute; bottom: 20px; right: 32px; font-size: 13px; color: rgba(255,255,255,0.25); }
+  .slide-hdr { text-align: center; margin-bottom: 28px; flex-shrink: 0; }
+  .slide-hdr h2 { font-size: 32px; font-weight: 700; }
+  .slide-hdr .source { font-size: 13px; color: var(--gray); margin-top: 6px; }
+  .tag { display: inline-block; padding: 3px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; margin: 0 4px; }
+  .t-blue { background: rgba(50,108,229,0.15); color: #79c0ff; }
+  .t-red { background: rgba(248,81,73,0.15); color: #ffa198; }
+  .t-green { background: rgba(46,160,67,0.15); color: #7ee787; }
+  .t-purple { background: rgba(137,87,229,0.15); color: #d2a8ff; }
+  .t-orange { background: rgba(210,153,34,0.15); color: #e3b341; }
+
+  .body { font-size: 18px; line-height: 1.85; color: rgba(255,255,255,0.82); flex: 1; }
+  .body p { margin-bottom: 12px; }
+  .body strong { color: var(--white); }
+
+  .callout { border-left: 4px solid var(--primary); padding: 14px 20px; border-radius: 0 8px 8px 0; margin: 16px 0;
+    background: rgba(50,108,229,0.08); font-size: 17px; line-height: 1.8; }
+  .callout-red { border-color: var(--red); background: rgba(248,81,73,0.08); }
+  .callout-green { border-color: var(--green); background: rgba(46,160,67,0.08); }
+  .callout-purple { border-color: var(--purple); background: rgba(137,87,229,0.08); }
+  .callout-orange { border-color: var(--orange); background: rgba(210,153,34,0.08); }
+
+  .cherry { background: linear-gradient(135deg, rgba(245,166,35,0.08), rgba(245,166,35,0.03));
+    border: 1px solid rgba(245,166,35,0.25); border-radius: 10px; padding: 16px 20px; margin-top: 16px;
+    font-size: 16px; color: rgba(255,255,255,0.85); position: relative; line-height: 1.8; }
+  .cherry::before { content: '🍒 樱桃的洞察'; position: absolute; top: -10px; left: 16px;
+    background: var(--darker); padding: 1px 10px; border-radius: 6px; font-size: 12px; color: var(--accent); font-weight: 700; }
+
+  .detail-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 12px 0; }
+  .detail-box h4 { font-size: 16px; color: var(--accent); margin-bottom: 8px; }
+  .detail-box p, .detail-box li { font-size: 15px; color: rgba(255,255,255,0.7); line-height: 1.7; }
+
+  ul.feat { list-style: none; padding: 0; }
+  ul.feat li { font-size: 17px; line-height: 2; padding-left: 24px; position: relative; color: rgba(255,255,255,0.82); }
+  ul.feat li::before { content: '▸'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 12px 0; }
+  .card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .card h4 { font-size: 15px; margin-bottom: 6px; }
+  .card p { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .two-col h3 { font-size: 18px; margin-bottom: 12px; color: var(--accent); }
+  .two-col ul { list-style: none; padding: 0; }
+  .two-col li { font-size: 16px; line-height: 1.9; color: rgba(255,255,255,0.78); padding-left: 20px; position: relative; }
+  .two-col li::before { content: '•'; position: absolute; left: 0; color: var(--primary); }
+
+  .flow { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 18px 24px; margin: 12px 0;
+    font-family: 'Courier New', monospace; font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.9; }
+
+  .big-num { font-size: 64px; font-weight: 900;
+    background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  table.vt { width: 100%; max-width: 900px; border-collapse: collapse; margin: 16px auto; }
+  table.vt th { padding: 10px 16px; background: rgba(50,108,229,0.15); font-size: 15px; font-weight: 500; text-align: left; border-bottom: 2px solid rgba(50,108,229,0.2); }
+  table.vt td { padding: 10px 16px; font-size: 15px; color: rgba(255,255,255,0.75); border-bottom: 1px solid rgba(255,255,255,0.06); }
+
+  .nav { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; z-index: 100; }
+  .nav button { padding: 8px 24px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.6); color: var(--white); border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; backdrop-filter: blur(10px); transition: all 0.2s; }
+  .nav button:hover { background: rgba(50,108,229,0.3); border-color: var(--primary); }
+  .nav .pi { display: flex; align-items: center; font-size: 13px; color: rgba(255,255,255,0.4); }
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s; z-index: 100; }
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+
+<!-- 1: 标题 -->
+<div class="slide slide-title active" id="s1">
+  <div style="font-size:72px;margin-bottom:16px">🍒</div>
+  <h1>云原生每日要闻</h1>
+  <div class="subtitle">Kubernetes 调度 × AI 推理 · 深度解读版 | 2026.04.06</div>
+  <div class="meta">由樱桃自动收集 · 深度阅读原文后的分析洞察 · 约 15 分钟</div>
+</div>
+
+<!-- 2: 今日要闻 -->
+<div class="slide" id="s2">
+  <div class="slide-hdr"><h2>📋 今日 7 条深度要闻</h2></div>
+  <div class="body">
+    <div class="grid2">
+      <div class="card"><h4>📦 K8s v1.36 前瞻</h4><p>Ingress NGINX 退役、externalIPs 废弃、SELinux GA、DRA 设备 Taint</p></div>
+      <div class="card"><h4>🤖 AI 模型分发全链路</h4><p>CNCF 深度分析：ModelPack + ORAS + Harbor + Dragonfly，含完整代码示例</p></div>
+      <div class="card"><h4>🖥️ KubeVirt v1.8</h4><p>PCIe NUMA 拓扑感知、Hypervisor 抽象层、Intel TDX、增量备份</p></div>
+      <div class="card"><h4>🛡️ Kubescape 4.0</h4><p>运行时检测 GA、KAgent 安全扫描、42 个安全配置检查点</p></div>
+      <div class="card"><h4>🤖 Agent Sandbox</h4><p>SIG Apps 官方项目：gVisor/Kata 隔离、缩放到零、预热池</p></div>
+      <div class="card"><h4>🧪 Lima v2.1</h4><p>macOS/FreeBSD 客户机、--sync AI 沙箱、guestagent 缩减 56%</p></div>
+      <div class="card"><h4>🔄 Image Promoter 重写</h4><p>9 阶段渐进式重写、删除 20% 代码、签名与复制分离</p></div>
+    </div>
+    <div class="callout" style="margin-top:20px">
+      <strong>本期亮点：</strong>发现 3 个与 AI on K8s 直接相关的重大进展 — Agent Sandbox（官方 AI Agent 托管）、Kubescape AI 安全扫描、ModelPack 模型分发标准化。AI 基础设施正在从"实验"走向"生产就绪"。
+    </div>
+  </div>
+  <span class="slide-num">2 / 20</span>
+</div>
+
+<!-- 3: K8s v1.36 Breaking Changes -->
+<div class="slide" id="s3">
+  <div class="slide-hdr">
+    <h2>📦 K8s v1.36 Breaking Changes 详解</h2>
+    <span class="tag t-red">Breaking</span><span class="tag t-blue">2026-03-30</span>
+    <div class="source">Kubernetes 官方博客 · v1.36 beta.0 已于 3/20 发布</div>
+  </div>
+  <div class="body">
+    <div class="callout callout-red">
+      <strong>⚠️ Ingress NGINX 退役（3/24）</strong><br>
+      SIG Network + 安全响应委员会联合宣布停止维护。不再发布任何版本、不再修复任何安全漏洞。现有部署可继续运行，但 Helm Chart 和镜像不再更新。<br>
+      <span style="color:var(--gray)">→ 官方建议迁移到 Gateway API 或其他 Ingress Controller</span>
+    </div>
+    <div class="callout callout-red">
+      <strong>⚠️ Service .spec.externalIPs 废弃（KEP-5707）</strong><br>
+      该字段自 K8s 早期就存在，长期被标记为安全隐患（CVE-2020-8554：中间人攻击）。v1.36 起使用会触发废弃警告，<strong>v1.43 将完全移除</strong>。<br>
+      <span style="color:var(--gray)">→ 替代方案：LoadBalancer Service / Gateway API / NodePort</span>
+    </div>
+    <div class="callout callout-red">
+      <strong>⚠️ gitRepo Volume 永久禁用（KEP-5040）</strong><br>
+      自 v1.11 起已废弃。存在严重安全漏洞：攻击者可通过 gitRepo 以 root 权限在节点执行代码。v1.36 起<strong>插件永久禁用且无法重新启用</strong>。<br>
+      <span style="color:var(--gray)">→ 替代方案：Init Container + git-sync 工具</span>
+    </div>
+  </div>
+  <span class="slide-num">3 / 20</span>
+</div>
+
+<!-- 4: K8s v1.36 新特性 -->
+<div class="slide" id="s4">
+  <div class="slide-hdr">
+    <h2>📦 K8s v1.36 值得关注的新特性</h2>
+    <span class="tag t-green">Enhancements</span>
+  </div>
+  <div class="body">
+    <div class="detail-box">
+      <h4>⚡ SELinux 卷挂载加速 — GA</h4>
+      <p>用 mount -o context=XYZ 替代递归文件重新标记，<strong>显著减少 Pod 启动延迟</strong>。自 v1.28 beta，v1.32 增加指标和退出选项，v1.36 默认对所有卷生效。</p>
+      <p style="color:var(--gray);font-size:14px">⚠️ 注意：混合 privileged 和 unprivileged Pod 共享卷时可能导致冲突，Pod 作者需正确设置 seLinuxChangePolicy</p>
+    </div>
+    <div class="detail-box">
+      <h4>🔑 ServiceAccount Token 外部签名 — GA</h4>
+      <p>kube-apiserver 可将 token 签名委托给外部系统（云 KMS、HSM 等）。对依赖集中式密钥管理基础设施的集群<strong>提升安全性和密钥管理便利性</strong>。</p>
+    </div>
+    <div class="detail-box">
+      <h4>🎯 DRA 设备 Taint/Toleration 支持</h4>
+      <p>v1.33 引入 DRA 设备 Taint 机制。v1.36 进一步增强驱动支持，允许设备管理器为特定设备设置 Taint，<strong>调度器可据此实现精细化的设备级调度控制</strong>。</p>
+      <p style="color:var(--gray);font-size:14px">→ 这对 GPU 调度意义重大：可将故障 GPU 或专用 GPU 标记 Taint，防止普通工作负载调度上去</p>
+    </div>
+  </div>
+  <span class="slide-num">4 / 20</span>
+</div>
+
+<!-- 5: Ingress 退役分析 -->
+<div class="slide" id="s5">
+  <div class="slide-hdr">
+    <h2>📦 Ingress NGINX 退役：为什么 & 怎么办</h2>
+    <span class="tag t-orange">深度分析</span>
+  </div>
+  <div class="body">
+    <div class="two-col">
+      <div>
+        <h3>📢 退役原因</h3>
+        <ul>
+          <li>长期存在未修复的安全漏洞</li>
+          <li>SIG Network 和安全响应委员会联合决定</li>
+          <li>维护资源不足，无法满足安全标准</li>
+          <li>Ingress API 本身设计有局限性（单一入口、缺少高级路由）</li>
+        </ul>
+        <h3 style="margin-top:20px">📊 影响评估</h3>
+        <ul>
+          <li>全球使用最广泛的 Ingress Controller</li>
+          <li>大量 Helm Chart、教程、CI/CD 模板依赖</li>
+          <li><strong>不影响现有部署运行</strong>，但无安全更新</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🔄 推荐迁移方案</h3>
+        <ul>
+          <li><strong>Gateway API</strong> — 官方标准，Ingress2Gateway 工具辅助迁移</li>
+          <li><strong>Envoy Gateway</strong> — 基于 Envoy，Gateway API 原生实现</li>
+          <li><strong>Higress</strong> — 刚加入 CNCF，内置 AI 推理路由能力</li>
+          <li><strong>Cilium</strong> — eBPF 数据面，高性能 + 安全</li>
+          <li><strong>Istio</strong> — 服务 Mesh，适合微服务场景</li>
+        </ul>
+        <h3 style="margin-top:20px">⏰ 时间窗口</h3>
+        <ul>
+          <li>现有部署：继续运行，但无安全补丁</li>
+          <li>建议：尽快评估迁移方案</li>
+          <li>Gateway API 已有成熟迁移工具</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cherry">
+      这是一次教科书级的社区治理案例。Ingress NGINX 是 K8s 生态中使用最广泛的组件之一，但安全委员会宁可"强制退休"也不妥协。这说明社区对安全问题的态度越来越零容忍。对调度层的影响：新的 Gateway 方案（特别是 Higress 的 AI 路由能力）会改变流量入口的资源需求模型。
+    </div>
+  </div>
+  <span class="slide-num">5 / 20</span>
+</div>
+
+<!-- 6: 模型分发问题 -->
+<div class="slide" id="s6">
+  <div class="slide-hdr">
+    <h2>🤖 AI 模型分发：被忽视的生产瓶颈</h2>
+    <span class="tag t-green">CNCF 深度分析</span>
+    <span class="tag t-blue">3 位 CNCF 项目维护者联合撰写</span>
+    <div class="source">作者：Dragonfly/ModelPack 维护者 Wenbo Qi · Harbor/ModelPack 维护者 Chenyu Zhang · ORAS 维护者 Feynman Zhou</div>
+  </div>
+  <div class="body">
+    <div class="callout">
+      <strong>核心论点：</strong>"模型的权重文件是连接训练和推理管线的核心产物，但围绕它的基础设施常常是事后才考虑的。"
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card" style="text-align:center">
+        <div class="big-num">140 GB</div>
+        <p>量化 LLaMA-3 70B 单个模型大小<br>≈ 一个完整容器镜像仓库的规模</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="big-num">1 TB+</div>
+        <p>前沿多模态模型文件大小<br>传统 Git/下载方式完全不可行</p>
+      </div>
+    </div>
+    <div class="callout callout-red" style="margin-top:16px">
+      <strong>对调度的影响：</strong>GPU 推理 Pod 在 Init 阶段等待模型拉取可能需要 30 分钟以上。再好的调度策略（亲和性、拓扑感知）也无法弥补这个"第一公里"的延迟。模型分发速度是 GPU 集群资源利用率的隐性天花板。
+    </div>
+  </div>
+  <span class="slide-num">6 / 20</span>
+</div>
+
+<!-- 7: 模型分发方案 -->
+<div class="slide" id="s7">
+  <div class="slide-hdr">
+    <h2>🤖 云原生模型分发：OCI-Native 全链路方案</h2>
+    <span class="tag t-green">解决方案</span>
+  </div>
+  <div class="body">
+    <p style="margin-bottom:8px"><strong>核心理念：</strong>用软件交付的最佳实践管理模型 — 版本化、不可变、GitOps、可审计。</p>
+    <div class="flow">
+CI/CD Pipeline
+  │
+  ├─ 1️⃣ modctl modelfile generate  → 自动生成 Modelfile
+  ├─ 2️⃣ modctl build               → 打包为 OCI Artifact（含 ARCH/FAMILY/FORMAT 元数据）
+  ├─ 3️⃣ modctl push → Harbor        → 推送到 Artifact Registry
+  ├─ 4️⃣ Dragonfly P2P               → 集群内节点互相分发
+  └─ 5️⃣ K8s OCI Volume / CSI Driver → 模型挂载到推理容器
+    </div>
+    <div class="detail-box">
+      <h4>📦 ModelPack + modctl</h4>
+      <p>CLI 工具，将模型打包为标准 OCI Artifact。生成的 Manifest 包含模型元数据（media type: application/vnd.cncf.model.manifest.v1+json），包含 ARCH、FAMILY、FORMAT 等字段，与容器镜像共用同一套 Registry 基础设施。</p>
+    </div>
+    <div class="grid2">
+      <div class="detail-box">
+        <h4>🐘 ORAS</h4>
+        <p>OCI Registry as Storage — 将模型作为 OCI Artifact 存储。复用现有 Registry（Harbor），支持版本管理、签名、RBAC。</p>
+      </div>
+      <div class="detail-box">
+        <h4>🐉 Dragonfly</h4>
+        <p>P2P 分发，集群内节点互相传输模型数据。带宽利用率接近线性增长，避免所有节点同时从 Registry 拉取造成带宽瓶颈。</p>
+      </div>
+    </div>
+    <div class="cherry">
+      这个方案的精妙之处在于<strong>完全复用了容器交付的基础设施</strong>。模型不再是"放在 S3 上的大文件"，而是与容器镜像享有同等生命周期管理的"一等公民"。对调度器来说，这意味着模型拉取可以像镜像拉取一样被优化和缓存。
+    </div>
+  </div>
+  <span class="slide-num">7 / 20</span>
+</div>
+
+<!-- 8: 传统方案对比 -->
+<div class="slide" id="s8">
+  <div class="slide-hdr">
+    <h2>🤖 模型分发：传统方案 vs 云原生方案</h2>
+    <span class="tag t-orange">对比分析</span>
+  </div>
+  <div class="body">
+    <table class="vt">
+      <thead>
+        <tr><th>方案</th><th>版本管理</th><th>分发效率</th><th>K8s 原生</th><th>供应链安全</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Git LFS (HF Hub)</strong></td><td>✅ 原生</td><td>❌ 协议适配差</td><td>❌</td><td>⚠️ 有限</td></tr>
+        <tr><td><strong>S3 / MinIO</strong></td><td>❌ 弱</td><td>⚠️ 带宽瓶颈</td><td>⚠️ 需适配</td><td>❌ 弱</td></tr>
+        <tr><td><strong>NFS / CephFS</strong></td><td>❌ 弱</td><td>⚠️ 运维复杂</td><td>⚠️ 需适配</td><td>❌ 弱</td></tr>
+        <tr style="border-top:2px solid var(--accent)">
+          <td><strong>ModelPack + ORAS</strong></td><td>✅ OCI 标准</td><td>✅ Registry + P2P</td><td>✅ 原生</td><td>✅ cosign/SLSA</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:20px">
+      <strong>关键差异：</strong>传统方案将模型视为"文件"，云原生方案将模型视为"Artifact"。这个认知转变带来的不仅是工具层面的升级，更是整个交付流程的标准化 — 从 CI/CD 到部署到回滚，全部与容器镜像走同一套流程。
+    </div>
+    <div class="callout-orange callout" style="margin-top:12px">
+      <strong>实际收益预估（基于 Dragonfly 官方数据）：</strong>100 节点集群分发 140GB 模型，传统串行拉取约需 6+ 小时，Dragonfly P2P 约 30-45 分钟，提升 <strong>8-12 倍</strong>。
+    </div>
+  </div>
+  <span class="slide-num">8 / 20</span>
+</div>
+
+<!-- 9: KubeVirt v1.8 -->
+<div class="slide" id="s9">
+  <div class="slide-hdr">
+    <h2>🖥️ KubeVirt v1.8：VM 场景的 AI 性能突破</h2>
+    <span class="tag t-purple">SIG Compute</span>
+    <span class="tag t-blue">对齐 K8s v1.35</span>
+  </div>
+  <div class="body">
+    <div class="detail-box">
+      <h4>🔥 PCIe NUMA 拓扑感知（AI/HPC 重点）</h4>
+      <p>KubeVirt v1.8 引入 PCIe NUMA 拓扑感知，使 VM 中的 AI/HPC 工作负载获得<strong>接近裸金属的性能</strong>。GPU 通过 PCIe 总线连接 CPU 和内存，跨 NUMA 节点访问的延迟高 2-3 倍。在多 GPU 服务器上（如 8×A100/H100），如果 VM 的 vCPU 和内存不在 GPU 所在的 NUMA 节点上，推理延迟会显著增加。</p>
+    </div>
+    <div class="grid2">
+      <div class="detail-box">
+        <h4>🔐 Intel TDX 机密计算认证</h4>
+        <p>Confidential Computing Working Group 引入 Intel TDX Attestation 支持。VM 可证明自己运行在可信的机密硬件上。对 AI 模型保护场景意义重大 — 模型权重在 VM 内运行时对云厂商不可见。</p>
+      </div>
+      <div class="detail-box">
+        <h4>🧩 Hypervisor 抽象层</h4>
+        <p>新增 Hypervisor Abstraction Layer，KubeVirt 可集成 KVM 以外的虚拟化后端（如 QEMU、Firecracker），同时保持 KVM 为默认行为。为未来多云虚拟化场景铺路。</p>
+      </div>
+    </div>
+    <div class="detail-box">
+      <h4>💾 增量备份（CBT）+ ContainerPath Volume</h4>
+      <p>基于 QEMU/libvirt 的 Changed Block Tracking 增量备份，<strong>存储无关</strong>，不依赖特定 CSI 驱动。只捕获修改数据，大幅减少备份窗口和存储占用。ContainerPath Volume 允许将容器路径映射为 VM 存储，提升可移植性。</p>
+    </div>
+    <div class="detail-box">
+      <h4>📊 性能基准数据（SIG Scale）</h4>
+      <p>KWOK 测试扩展至 8000 VMI。virt-api 内存从 100→170 VMI 增长 30MB（3.89 KB/VMI），virt-controller 增长 1335MB（173 KB/VMI）。控制面在 VMI 规模增长时表现稳定。</p>
+    </div>
+  </div>
+  <span class="slide-num">9 / 20</span>
+</div>
+
+<!-- 10: Kubescape 4.0 -->
+<div class="slide" id="s10">
+  <div class="slide-hdr">
+    <h2>🛡️ Kubescape 4.0：运行时安全 GA + AI Agent 安全</h2>
+    <span class="tag t-red">安全</span>
+    <span class="tag t-blue">CNCF</span>
+  </div>
+  <div class="body">
+    <div class="detail-box">
+      <h4>🔍 运行时威胁检测 GA</h4>
+      <p>基于 CEL（Common Expression Language）规则引擎，实时监控三类事件：<strong>系统交互</strong>（进程、Linux capabilities、系统调用）、<strong>网络连接</strong>（TCP/UDP/HTTP 事件）、<strong>存储访问</strong>（文件系统活动）。规则和 RuleBinding 作为 K8s CRD 管理，告警可导出到 AlertManager、SIEM、Syslog、HTTP Webhook。</p>
+    </div>
+    <div class="detail-box">
+      <h4>💾 Storage GA — Aggregated API</h4>
+      <p>利用 K8s Aggregated API 作为安全元数据的集中存储层。Application Profiles、SBOM、漏洞 Manifest 等数据<strong>不存入 etcd</strong>，避免压垮核心数据库。已在大规模高密度集群验证。</p>
+    </div>
+    <div class="detail-box">
+      <h4>🤖 AI Agent 安全：双面盾牌</h4>
+      <p><strong>赋能 AI Agent：</strong>通过 KAgent-native 插件，AI Agent 可直接扫描集群安全态势 — 漏洞清单、RBAC 配置、运行时行为（系统调用、文件访问、网络通信）。</p>
+      <p><strong>监管 AI Agent：</strong>为 KAgent（CNCF Sandbox 项目）引入 42 个安全配置检查点 + 15 个 Rego 规则，检测空安全上下文、缺失 NetworkPolicy、过度权限等问题。</p>
+    </div>
+    <div class="detail-box">
+      <h4>🏗️ 架构简化</h4>
+      <p>移除 host-sensor（DaemonSet 弹出式扫描），将 host-agent 能力直接集成到 node-agent。从两个高权限组件合并为一个，审计更清晰，运维更简单。</p>
+    </div>
+  </div>
+  <span class="slide-num">10 / 20</span>
+</div>
+
+<!-- 11: Agent Sandbox -->
+<div class="slide" id="s11">
+  <div class="slide-hdr">
+    <h2>🤖 Agent Sandbox：K8s 官方 AI Agent 托管方案</h2>
+    <span class="tag t-purple">SIG Apps</span>
+    <span class="tag t-green">重磅发现</span>
+    <div class="source">Kubernetes 官方博客 · SIG Apps 正在开发中</div>
+  </div>
+  <div class="body">
+    <div class="callout">
+      <strong>核心问题：</strong>AI Agent 正从"短命无状态推理"转向"长驻有状态自主执行"。它们需要持久身份、安全沙箱（执行不可信代码）、长时间空闲后快速唤醒。传统 K8s 原语（StatefulSet+PVC+Headless Service）无法优雅地表达这种工作负载模式。
+    </div>
+    <div class="detail-box">
+      <h4>📦 Sandbox CRD — 三大核心能力</h4>
+      <ul class="feat">
+        <li><strong>强隔离运行时</strong> — 原生支持 gVisor 和 Kata Containers，为不可信代码提供内核级和网络级隔离</li>
+        <li><strong>生命周期管理</strong> — 支持缩放到零（Scale to Zero），空闲时释放资源，需要时快速恢复到之前的状态</li>
+        <li><strong>稳定网络标识</strong> — 每个 Sandbox 有稳定的 hostname 和网络身份，支持多 Agent 协同发现和通信</li>
+      </ul>
+    </div>
+    <div class="detail-box">
+      <h4>⚡ SandboxWarmPool — 消除冷启动</h4>
+      <p>传统 Pod 启动约 1 秒开销，对 Web 服务可接受，但对 AI Agent 的交互连续性是致命的。SandboxWarmPool 维护预配置的 Sandbox Pod 池，用户通过 SandboxClaim + SandboxTemplate 即刻获取预热环境。<strong>冷启动时间从 ~1s 降至 ~0</strong>。</p>
+    </div>
+    <div class="cherry">
+      这是本期最重要的发现之一。SIG Apps 专门为 AI Agent 设计了新的 CRD，说明 K8s 社区已经认可 AI Agent 是一种独立的工作负载类型，而不仅仅是"特殊的 Pod"。SandboxWarmPool 的设计思路（预热池 + 即时分配）与 GPU 推理的 Model Serving 有异曲同工之妙。
+    </div>
+  </div>
+  <span class="slide-num">11 / 20</span>
+</div>
+
+<!-- 12: Lima v2.1 -->
+<div class="slide" id="s12">
+  <div class="slide-hdr">
+    <h2>🧪 Lima v2.1：本地 AI 沙箱演进</h2>
+    <span class="tag t-blue">CNCF 孵化项目</span>
+  </div>
+  <div class="body">
+    <div class="two-col">
+      <div>
+        <h3>🐧 多 OS 客户机</h3>
+        <ul>
+          <li><strong>macOS 客户机（实验性）</strong> — 仅限 Apple Silicon，使用 vz 驱动。运行 `limactl start template:macos` 即可创建</li>
+          <li><strong>FreeBSD 客户机（实验性）</strong> — 运行 `limactl start template:freebsd`</li>
+          <li>从"让 Mac 跑 Linux 容器"成长为通用本地 VM 平台</li>
+        </ul>
+        <h3 style="margin-top:20px">⚡ 性能优化</h3>
+        <ul>
+          <li>guestagent 二进制从 <strong>14MB 缩减到 6.1MB</strong>（减少 56%）</li>
+          <li>basedisk + diffdisk 合并为单一磁盘文件</li>
+          <li>新增 host-to-guest 时间同步</li>
+          <li>k3s 模板支持多节点集群</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🔒 AI Agent 沙箱：--sync 模式</h3>
+        <ul>
+          <li><strong>问题：</strong>直接挂载宿主机目录给 AI Agent 太危险 — 幻觉可能导致文件破坏</li>
+          <li><strong>方案：</strong>`limactl shell --sync . default claude "指令"`</li>
+          <li>Agent 在隔离 VM 中工作，完成后用户在宿主机终端确认变更</li>
+        </ul>
+        <div class="callout callout-green" style="margin-top:12px">
+          <strong>工作流程：</strong><br>
+          1. `limactl start --mount-none` 创建无菌环境<br>
+          2. AI Agent 在 VM 中执行任务<br>
+          3. 退出时弹出确认提示：<br>
+          ⚠️ Accept the changes? → Yes / No / View
+        </div>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">12 / 20</span>
+</div>
+
+<!-- 13: Image Promoter -->
+<div class="slide" id="s13">
+  <div class="slide-hdr">
+    <h2>🔄 Image Promoter 重写：9 阶段渐进式工程</h2>
+    <span class="tag t-green">工程实践</span>
+    <span class="tag t-blue">42 位贡献者 · 3500+ commits</span>
+  </div>
+  <div class="body">
+    <p>kpromo 负责将镜像从 staging 推到 registry.k8s.io，签名 + 复制到 20+ 区域镜像。<strong>如果它坏了，K8s 无法发布。</strong></p>
+    <div class="callout callout-red">
+      <strong>重写前的痛点：</strong>核心推广逻辑已成长为单体，难以扩展和测试。生产推广任务经常超过 30 分钟，频繁因 rate limit 失败。添加 SLSA provenance 和漏洞扫描功能极其痛苦。
+    </div>
+    <div class="detail-box">
+      <h4>🔧 9 阶段渐进式重写（2026年2月）</h4>
+      <div class="grid3">
+        <div><p><strong>Phase 1</strong><br>Rate Limiting — 自适应退避</p></div>
+        <div><p><strong>Phase 2</strong><br>接口抽象 — 可替换可测试</p></div>
+        <div><p><strong>Phase 3</strong><br>流水线引擎 — 分阶段执行</p></div>
+        <div><p><strong>Phase 4</strong><br>SLSA Provenance 验证</p></div>
+        <div><p><strong>Phase 5</strong><br>漏洞扫描 + SBOM</p></div>
+        <div><p><strong>Phase 6</strong><br>签名与复制分离</p></div>
+        <div><p><strong>Phase 7</strong><br>删除旧流水线</p></div>
+        <div><p><strong>Phase 8</strong><br>删除遗留依赖</p></div>
+        <div><p><strong>Phase 9</strong><br>删除单体核心</p></div>
+      </div>
+    </div>
+    <div class="callout callout-green">
+      <strong>关键决策：签名与复制分离（Phase 6）</strong> — 这是解决 rate limit 失败的核心。之前签名和复制在同一阶段竞争 API 配额，分离后各自独立限流，消除了大部分生产故障。删除 20% 代码，性能大幅提升。
+    </div>
+    <div class="cherry">
+      "没人注意到"的重写才是最好的重写。9 个阶段、每个阶段独立 review 和验证，最终在生产环境无缝切换。这种渐进式重写策略值得借鉴 — 不追求"大爆炸"式重写，而是让每一步都可以独立回滚。
+    </div>
+  </div>
+  <span class="slide-num">13 / 20</span>
+</div>
+
+<!-- 14: GitHub 精选 -->
+<div class="slide" id="s14">
+  <div class="slide-hdr">
+    <h2>🔥 值得关注的 GitHub 项目</h2>
+    <span class="tag t-orange">AI + 调度</span>
+  </div>
+  <div class="body">
+    <table class="vt">
+      <thead><tr><th>项目</th><th>Stars</th><th>定位</th><th>与我们的关联</th></tr></thead>
+      <tbody>
+        <tr><td><strong>KAI-Scheduler</strong></td><td>⭐ 1,220</td><td>K8s 原生 AI 调度器</td><td>拓扑感知、Gang 调度、GPU 亲和</td></tr>
+        <tr><td><strong>OME</strong></td><td>⭐ 412</td><td>LLM serving + GPU 调度 operator</td><td>SGLang 团队出品，生产级</td></tr>
+        <tr><td><strong>Grove</strong></td><td>⭐ 183</td><td>网络拓扑感知 Gang 调度</td><td>AI 推理的分布式调度</td></tr>
+        <tr><td><strong>DanteGPU</strong></td><td>⭐ 73</td><td>分布式 GPU 网络</td><td>GPU 互联与调度</td></tr>
+        <tr><td><strong>Agent Sandbox</strong></td><td>SIG Apps</td><td>K8s AI Agent 托管</td><td>官方项目，gVisor/Kata 隔离</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:20px">
+      <strong>趋势信号：</strong>AI 调度器正在从"通用调度器 + 插件"模式转向"专用 AI 调度器"模式。KAI-Scheduler、OME、Grove 都不是在 kube-scheduler 上做扩展，而是独立的调度实现。这说明 AI 工作负载的调度需求（拓扑感知、Gang 调度、GPU 亲和）已经足够独特，值得专用实现。
+    </div>
+  </div>
+  <span class="slide-num">14 / 20</span>
+</div>
+
+<!-- 15: 版本速报 -->
+<div class="slide" id="s15">
+  <div class="slide-hdr">
+    <h2>📊 K8s 版本 & 升级建议</h2>
+    <span class="tag t-blue">版本管理</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;align-items:center">
+    <table class="vt" style="margin-top:20px">
+      <thead><tr><th>版本</th><th>状态</th><th>关键变更</th><th>调度相关</th></tr></thead>
+      <tbody>
+        <tr><td><strong>v1.36</strong></td><td>🧪 beta.0</td><td>Ingress NGINX 退役、externalIPs 废弃</td><td>DRA 设备 Taint 支持</td></tr>
+        <tr><td><strong>v1.35</strong></td><td>✅ 1.35.3</td><td>Scheduling Gates GA</td><td>Checkpoint/Restore WG</td></tr>
+        <tr><td><strong>v1.34</strong></td><td>✅ 1.34.6</td><td>Pods Report DRA Resource Health</td><td>DRA 稳定化</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="text-align:left;max-width:800px;margin-top:24px">
+      <strong>升级建议：</strong>
+      <ul class="feat" style="margin-top:8px">
+        <li>使用 Ingress NGINX 的集群：立即评估迁移方案（Gateway API + Higress/Envoy）</li>
+        <li>使用 externalIPs 的集群：规划迁移到 LoadBalancer 或 Gateway API（v1.43 完全移除前有 7 个版本窗口）</li>
+        <li>关注 DRA 设备 Taint：GPU 调度场景可利用此特性实现故障设备隔离</li>
+        <li>关注 SELinux GA：安全增强集群可受益于更快的 Pod 启动速度</li>
+      </ul>
+    </div>
+  </div>
+  <span class="slide-num">15 / 20</span>
+</div>
+
+<!-- 16: 趋势一 -->
+<div class="slide" id="s16">
+  <div class="slide-hdr">
+    <h2>📈 趋势一：AI on K8s 从实验走向标准化</h2>
+    <span class="tag t-purple">深度解读</span>
+  </div>
+  <div class="body">
+    <div class="callout">
+      本期有 4 个项目直接与 AI on K8s 相关，覆盖了从模型分发、GPU 调度到 Agent 安全的完整栈。
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card" style="border-color:rgba(46,160,67,0.4)">
+        <h4>📦 模型层</h4>
+        <p>ModelPack + ORAS + Harbor + Dragonfly 构建了<strong>标准化的模型分发管线</strong>。模型不再是"大文件"，而是"OCI Artifact"。这个标准化是整个 AI on K8s 生态的地基。</p>
+      </div>
+      <div class="card" style="border-color:rgba(50,108,229,0.4)">
+        <h4>🖥️ 硬件层</h4>
+        <p>KubeVirt v1.8 的 PCIe NUMA 感知和 DRA 设备 Taint 说明<strong>硬件感知调度正在被内置到核心</strong>，不再是第三方插件的领域。</p>
+      </div>
+      <div class="card" style="border-color:rgba(137,87,229,0.4)">
+        <h4>🤖 Agent 层</h4>
+        <p>Agent Sandbox（SIG Apps）和 Kubescape 4.0 从两个维度解决 AI Agent 安全：<strong>安全沙箱 + 安全扫描</strong>。Agent 被认可为独立工作负载类型。</p>
+      </div>
+      <div class="card" style="border-color:rgba(245,166,35,0.4)">
+        <h4>🔀 网关层</h4>
+        <p>Higress 加入 CNCF + Ingress NGINX 退役 = AI 推理需要<strong>智能网关</strong>（模型路由、负载均衡、限流）。传统 Ingress 不够用了。</p>
+      </div>
+    </div>
+    <div class="cherry">
+      一年前，"AI on K8s" 还需要各种拼凑。现在，从模型打包（ModelPack）到分发（Dragonfly）到安全（Kubescape）到托管（Agent Sandbox），每个环节都有了 CNCF 级别的标准方案。这个生态成熟速度超出预期。
+    </div>
+  </div>
+  <span class="slide-num">16 / 20</span>
+</div>
+
+<!-- 17: 趋势二 -->
+<div class="slide" id="s17">
+  <div class="slide-hdr">
+    <h2>📈 趋势二：安全向纵深发展 & 旧标准加速淘汰</h2>
+    <span class="tag t-red">安全 + 治理</span>
+  </div>
+  <div class="body">
+    <div class="two-col">
+      <div>
+        <h3>🔒 安全纵深防御</h3>
+        <ul>
+          <li><strong>运行时安全 GA</strong> — Kubescape 从静态扫描进入实时监控</li>
+          <li><strong>机密计算</strong> — KubeVirt Intel TDX，模型权重对云厂商不可见</li>
+          <li><strong>AI Agent 安全</strong> — 42 个安全检查点，Agent 不再是"黑盒特权 Pod"</li>
+          <li><strong>供应链安全</strong> — Image Promoter 重写，SLSA provenance 成标配</li>
+          <li><strong>本地沙箱</strong> — Lima --sync 模式，开发环境安全</li>
+        </ul>
+        <p style="margin-top:12px;color:var(--gray);font-size:14px">安全覆盖范围：容器 → VM → AI Agent → 供应链 → 本地开发</p>
+      </div>
+      <div>
+        <h3>🏗️ 旧标准淘汰</h3>
+        <ul>
+          <li><strong>Ingress NGINX</strong> — 安全漏洞导致退役</li>
+          <li><strong>externalIPs</strong> — CVE-2020-8554 导致废弃</li>
+          <li><strong>gitRepo Volume</strong> — root 代码执行漏洞，永久禁用</li>
+          <li><strong>host-sensor</strong> — DaemonSet 弹出式扫描被移除</li>
+        </ul>
+        <div class="callout" style="margin-top:12px">
+          <strong>共同特征：</strong>这些淘汰都源于安全问题，而非功能不足。社区正在用"安全不达标就淘汰"的标准重新审视每个组件。
+        </div>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">17 / 20</span>
+</div>
+
+<!-- 18: 樱桃总结 -->
+<div class="slide" id="s18">
+  <div class="slide-hdr">
+    <h2>🍒 樱桃的深度总结</h2>
+    <span class="tag t-orange">个人观点</span>
+  </div>
+  <div class="body">
+    <div class="callout callout-purple">
+      <strong>洞察 1：模型分发是 AI 调度的"第一公里"瓶颈</strong><br>
+      不是调度算法不够好，而是模型还没到位。140GB 的模型文件让 Pod 在 Init 阶段干等 30 分钟。ModelPack + Dragonfly 的 OCI-native 方案是最务实路径 — 复用容器基础设施，零学习成本。建议任何在做 GPU 推理的团队立即评估 Dragonfly。
+    </div>
+    <div class="callout callout-green">
+      <strong>洞察 2：NUMA 感知正在从"优化"变成"必需"</strong><br>
+      KubeVirt v1.8 的 PCIe NUMA 拓扑感知 + DRA 设备 Taint，说明 K8s 核心正在内化硬件感知调度能力。对 8×GPU 服务器的在线推理场景，跨 NUMA 访问的延迟差异（2-3 倍）直接决定用户体验。调度器必须原生支持 NUMA 拓扑。
+    </div>
+    <div class="callout callout-orange">
+      <strong>洞察 3：AI Agent 是 K8s 的新工作负载类型</strong><br>
+      Agent Sandbox 不是又一个 CRD，而是 SIG Apps 对"AI Agent = 新工作负载类型"的正式认可。长驻、有状态、单例、可缩放到零 — 这些特征与 Web Server 完全不同。未来 K8s 调度器可能需要为 Agent 工作负载设计专门的调度策略。
+    </div>
+    <div class="callout">
+      <strong>洞察 4：安全零容忍正在重塑生态</strong><br>
+      Ingress NGINX 退役、gitRepo 永久禁用、host-sensor 移除 — 社区在用行动表明"安全不达标就不留"。这种文化对 AI 推理场景尤其重要，因为模型文件本身就是高价值攻击目标。
+    </div>
+  </div>
+  <span class="slide-num">18 / 20</span>
+</div>
+
+<!-- 19: 行动建议 -->
+<div class="slide" id="s19">
+  <div class="slide-hdr">
+    <h2>✅ 本周行动建议</h2>
+    <span class="tag t-green">可落地</span>
+  </div>
+  <div class="body">
+    <ul class="feat">
+      <li><strong>🔧 评估 Ingress 迁移</strong> — 使用 Ingress NGINX 的集群，测试 Gateway API + Higress 迁移路径</li>
+      <li><strong>🐉 部署 Dragonfly</strong> — 有 GPU 推理集群的，测试 Dragonfly P2P 模型分发，预估加速效果</li>
+      <li><strong>📦 试用 ModelPack</strong> — 用 modctl 将一个模型打包为 OCI Artifact，体验标准化模型交付流程</li>
+      <li><strong>🤖 关注 Agent Sandbox</strong> — 如果有 AI Agent 部署需求，试用 Sandbox CRD + SandboxWarmPool</li>
+      <li><strong>🛡️ 试点 Kubescape 4.0</strong> — 启用运行时威胁检测，特别是有 AI Agent 操作集群的场景</li>
+      <li><strong>📊 调研 KAI-Scheduler</strong> — 如果有 AI 训练/推理 Gang 调度需求，评估其拓扑感知能力</li>
+      <li><strong>⚠️ 审计 externalIPs</strong> — 检查集群 Service 是否使用 externalIPs，规划迁移（v1.43 移除前有窗口）</li>
+    </ul>
+    <div class="callout callout-green" style="margin-top:16px">
+      <strong>优先级排序：</strong>Ingress 迁移 > Dragonfly 评估 > Kubescape 运行时检测 > ModelPack 试用 > Agent Sandbox 关注 > KAI-Scheduler 调研 > externalIPs 审计
+    </div>
+  </div>
+  <span class="slide-num">19 / 20</span>
+</div>
+
+<!-- 20: 致谢 -->
+<div class="slide slide-title" id="s20">
+  <div style="font-size:64px;margin-bottom:16px">🍒</div>
+  <h2 style="font-size:36px;margin-bottom:8px;background:linear-gradient(90deg,#fff,#90caf9,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent">感谢聆听</h2>
+  <p style="font-size:17px;color:rgba(255,255,255,0.55);margin-bottom:28px">每日云原生要闻 · 深度解读版 · 由樱桃自动收集整理</p>
+  <div style="display:flex;gap:40px;justify-content:center">
+    <div style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--primary)">GitHub</div><div style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px">lhy9816/cloud-native-daily</div></div>
+    <div style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--accent)">每日推送</div><div style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px">早上 8:00 自动推送</div></div>
+    <div style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--green)">知识库</div><div style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px">持续沉淀积累</div></div>
+  </div>
+  <p style="margin-top:36px;font-size:20px;color:rgba(255,255,255,0.3)">Q & A</p>
+  <span class="slide-num">20 / 20</span>
+</div>
+
+<div class="nav">
+  <button onclick="prev()">←</button>
+  <div class="pi"><span id="cur">1</span> / <span id="tot">20</span></div>
+  <button onclick="next()">→</button>
+</div>
+
+<script>
+const S=document.querySelectorAll('.slide'),T=S.length;let c=0;
+document.getElementById('tot').textContent=T;
+function show(n){S.forEach(s=>s.classList.remove('active'));S[n].classList.add('active');document.getElementById('cur').textContent=n+1;document.getElementById('prog').style.width=((n+1)/T*100)+'%';}
+function next(){if(c<T-1){c++;show(c);}}
+function prev(){if(c>0){c--;show(c);}}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}if(e.key==='ArrowLeft'){e.preventDefault();prev();}if(e.key==='Home'){e.preventDefault();c=0;show(c);}if(e.key==='End'){e.preventDefault();c=T-1;show(c);}});
+show(0);
+</script>
+</body>
+</html>
